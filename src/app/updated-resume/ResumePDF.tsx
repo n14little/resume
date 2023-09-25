@@ -73,8 +73,13 @@ type Props = {
   keywords: Set<string>;
   skills: string[];
   experiences: Experience[];
+  contactInfo: {
+    name: string;
+    email: string;
+    phone: string;
+  }
 }
-function ResumePDFView({ keywords, skills, experiences }: Props) {
+function ResumePDFView({ keywords, skills, experiences, contactInfo }: Props) {
   const [windowObj, setWindowObj] = useState<typeof window>()
   useEffect(() => {
     setWindowObj(window)
@@ -91,9 +96,9 @@ function ResumePDFView({ keywords, skills, experiences }: Props) {
           <Page size="A4" style={styles.page}>
 
             <View style={styles.section}>
-              <Text style={styles.details}>Nick Little</Text>
-              <Text style={styles.details}>n14little@gmail.com</Text>
-              <Text style={styles.details}>(515) 720-0350</Text>
+              <Text style={styles.details}>{contactInfo.name}</Text>
+              <Text style={styles.details}>{contactInfo.email}</Text>
+              <Text style={styles.details}>{contactInfo.phone}</Text>
             </View>
 
             <View style={styles.section}>
@@ -166,7 +171,30 @@ export default function ResumePDF({ keywords }: Pick<Props, 'keywords'>) {
     setExperiences(storedExperiences || [])
   }, [])
 
+  const [name, setName] = useState("")
+  useEffect(() => {
+    const storedName = window.localStorage.getItem("name") || ""
+    setName(storedName)
+  }, [])
+
+  const [email, setEmail] = useState("")
+  useEffect(() => {
+    const storedEmail = window.localStorage.getItem("email") || ""
+    setEmail(storedEmail)
+  }, [])
+
+  const [phone, setPhone] = useState("")
+  useEffect(() => {
+    const storedPhone = window.localStorage.getItem("phone") || ""
+    setPhone(storedPhone)
+  }, [])
+  const contactInfo = {
+    name,
+    email,
+    phone,
+  }
+
   return (
-    <ResumePDFView keywords={keywords} skills={skills} experiences={experiences} />
+    <ResumePDFView keywords={keywords} skills={skills} experiences={experiences} contactInfo={contactInfo} />
   )
 }
