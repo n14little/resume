@@ -1,3 +1,6 @@
+Look at LinkedIn API to get this information
+https://learn.microsoft.com/en-us/linkedin/shared/references/v2/profile/full-profile
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
