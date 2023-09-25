@@ -29,7 +29,7 @@ export default function ContactInfoForm() {
   }, [])
   useEffect(() => {
     localStorage?.setItem("email", email)
-  }, [name])
+  }, [email])
 
   const [phone, setPhone] = useState("")
   useEffect(() => {
@@ -40,7 +40,7 @@ export default function ContactInfoForm() {
   }, [])
   useEffect(() => {
     localStorage?.setItem("phone", phone)
-  }, [name])
+  }, [phone])
 
   const initialValues = {
     name,
