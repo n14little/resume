@@ -96,16 +96,30 @@ mod tests {
         assert_eq!(ca_node.is_completed, false);
         assert_eq!(ca_node.children.len(), 2);
 
-        let car_node = ca_node.children.get_mut(&'r').unwrap();
-        assert_eq!(car_node.is_completed, true);
-        assert_eq!(car_node.children.len(), 1);
+        match ca_node.children.get(&'r') {
+            Some(car_node) => {
+                assert_eq!(car_node.is_completed, true);
+                assert_eq!(car_node.children.len(), 1);
+            }
+            None => panic!("did not find car node"),
+        }
+        match ca_node.children.get(&'t') {
+            Some(cat_node) => {
+                assert_eq!(cat_node.is_completed, true);
+                assert_eq!(cat_node.children.len(), 0);
+            }
+            None => panic!("did not find cat node"),
+        }
 
-        let cat_node = ca_node.children.get_mut(&'t').unwrap();
-        assert_eq!(cat_node.is_completed, true);
-        assert_eq!(cat_node.children.len(), 1);
-
-        let cart_node = car_node.children.get_mut(&'t').unwrap();
-        assert_eq!(cart_node.is_completed, true);
-        assert_eq!(cart_node.children.len(), 1);
+        match ca_node.children.get(&'r') {
+            Some(car_node) => match car_node.children.get(&'t') {
+                Some(cart_node) => {
+                    assert_eq!(cart_node.is_completed, true);
+                    assert_eq!(cart_node.children.len(), 0);
+                }
+                None => panic!("did not find cart node"),
+            },
+            None => panic!("did not find r node"),
+        }
     }
 }
