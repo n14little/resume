@@ -1,35 +1,78 @@
-use std::collections::{HashMap, VecDeque};
+use std::collections::HashMap;
 
-struct TrieNode {
-    children: HashMap<char, TrieNode>,
-    is_completed: bool,
-}
-trait TrieApi {
-    fn new() -> Self;
-    fn insert(&mut self, new_word: VecDeque<char>) -> &TrieNode;
+// derive cloan or copy
+pub struct TrieNode {
+    pub children: HashMap<char, TrieNode>,
+    pub is_completed: bool,
 }
 
-impl TrieApi for TrieNode {
-    fn new() -> TrieNode {
+impl TrieNode {
+    pub fn new() -> Self {
         TrieNode {
             children: HashMap::new(),
             is_completed: false,
         }
     }
-    fn insert(&mut self, mut new_word: VecDeque<char>) -> &TrieNode {
-        match new_word.pop_front() {
-            Some(c) => {
-                let entry = self.children.entry(c).or_insert(TrieNode::new());
-                if new_word.is_empty() {
-                    entry.is_completed = true;
-                    entry
-                } else {
-                    entry.insert(new_word)
-                }
-            }
+
+    pub fn insert(&mut self, new_word: impl Into<String>) -> &TrieNode {
+        let new_word: String = new_word.into();
+        let mut chars = new_word.chars();
+        let c = match chars.next() {
+            Some(c) => c,
             None => {
                 self.is_completed = true;
-                self
+                return self;
+            }
+        };
+
+        let remaining = chars.collect::<String>();
+        let entry = self.children.entry(c).or_insert(TrieNode::new());
+
+        entry.insert(remaining)
+    }
+    fn search_endings(&self, word: impl Into<String>) -> Vec<String> {
+        let mut active_node = self;
+        let word = word.into();
+        let mut completions = Vec::from([]);
+        for character in word.chars() {
+            match active_node.children.get(&character) {
+                Some(child_node) => {
+                    active_node = child_node;
+                }
+                None => {
+                    completions.push(word);
+                    return completions;
+                }
+            }
+        }
+
+        TrieNode::search_children(active_node, word, &mut completions);
+        completions
+    }
+    fn search_children<'a>(
+        node: &TrieNode,
+        word: impl Into<String>,
+        completions: &'a mut Vec<String>,
+    ) {
+        let word = word.into();
+        if node.is_completed {
+            let new_word = word.clone();
+            completions.push(new_word);
+        }
+
+        for key in node.children.keys() {
+            match node.children.get(key) {
+                Some(child_node) => {
+                    // if child_node.is_completed {
+                    //     let mut new_completion = word.clone();
+                    //     new_completion.push(*key);
+                    //     completions.push(new_completion);
+                    // }
+                    let mut new_word = word.clone();
+                    new_word.push(*key);
+                    TrieNode::search_children(child_node, new_word, completions);
+                }
+                None => {}
             }
         }
     }
@@ -49,7 +92,7 @@ mod tests {
     #[test]
     fn insert_single_character() {
         let mut root_node = TrieNode::new();
-        root_node.insert(VecDeque::from(['a']));
+        root_node.insert("a");
 
         assert_eq!(root_node.children.len(), 1);
 
@@ -61,7 +104,7 @@ mod tests {
     #[test]
     fn insert_many_characters() {
         let mut root_node = TrieNode::new();
-        root_node.insert(VecDeque::from(['a', 'b', 'c']));
+        root_node.insert("abc");
 
         assert_eq!(root_node.children.len(), 1);
 
@@ -81,9 +124,9 @@ mod tests {
     #[test]
     fn insert_many_words() {
         let mut root_node = TrieNode::new();
-        root_node.insert(VecDeque::from(['c', 'a', 't']));
-        root_node.insert(VecDeque::from(['c', 'a', 'r']));
-        root_node.insert(VecDeque::from(['c', 'a', 'r', 't']));
+        root_node.insert("cat");
+        root_node.insert("car");
+        root_node.insert("cart");
 
         assert_eq!(root_node.children.len(), 1);
 
@@ -120,5 +163,45 @@ mod tests {
             },
             None => panic!("did not find r node"),
         }
+    }
+
+    #[test]
+    fn search_endings_early_exit() {
+        let mut root_node = TrieNode::new();
+        root_node.insert("car");
+        let completions = root_node.search_endings("cart");
+
+        assert_eq!(completions.len(), 1);
+        assert_eq!(completions.get(0).unwrap(), &String::from("cart"));
+    }
+
+    #[test]
+    fn search_endings_simple_case() {
+        let mut root_node = TrieNode::new();
+        root_node.insert("cart");
+        root_node.insert("car");
+
+        let completions = root_node.search_endings("car");
+
+        assert_eq!(completions.len(), 2);
+        assert_eq!(completions.contains(&String::from("car")), true);
+        assert_eq!(completions.contains(&String::from("cart")), true);
+    }
+
+    #[test]
+    fn search_endings_many_case() {
+        let mut root_node = TrieNode::new();
+        root_node.insert("cart");
+        root_node.insert("car");
+        root_node.insert("cardigan");
+        root_node.insert("cartesian");
+
+        let completions = root_node.search_endings("car");
+
+        assert_eq!(completions.len(), 4);
+        assert_eq!(completions.contains(&String::from("car")), true);
+        assert_eq!(completions.contains(&String::from("cart")), true);
+        assert_eq!(completions.contains(&String::from("cartesian")), true);
+        assert_eq!(completions.contains(&String::from("cardigan")), true);
     }
 }
