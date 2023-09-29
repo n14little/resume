@@ -5,22 +5,21 @@ struct TrieNode {
     is_completed: bool,
 }
 trait TrieApi {
-    fn init() -> TrieNode;
-    fn insert(&mut self, new_word: VecDeque<char>) -> &mut TrieNode;
+    fn new() -> Self;
+    fn insert(&mut self, new_word: VecDeque<char>) -> &TrieNode;
 }
 
 impl TrieApi for TrieNode {
-    fn init() -> TrieNode {
-        let new_node = TrieNode {
+    fn new() -> TrieNode {
+        TrieNode {
             children: HashMap::new(),
             is_completed: false,
-        };
-        new_node
+        }
     }
-    fn insert(&mut self, mut new_word: VecDeque<char>) -> &mut TrieNode {
+    fn insert(&mut self, mut new_word: VecDeque<char>) -> &TrieNode {
         match new_word.pop_front() {
             Some(c) => {
-                let entry = self.children.entry(c).or_insert(TrieNode::init());
+                let entry = self.children.entry(c).or_insert(TrieNode::new());
                 if new_word.is_empty() {
                     entry.is_completed = true;
                     entry
@@ -41,15 +40,15 @@ mod tests {
     use super::*;
 
     #[test]
-    fn init_works() {
-        let root_node = TrieNode::init();
+    fn new_works() {
+        let root_node = TrieNode::new();
         assert_eq!(root_node.is_completed, false);
         assert_eq!(root_node.children.len(), 0)
     }
 
     #[test]
     fn insert_single_character() {
-        let mut root_node = TrieNode::init();
+        let mut root_node = TrieNode::new();
         root_node.insert(VecDeque::from(['a']));
 
         assert_eq!(root_node.children.len(), 1);
@@ -61,7 +60,7 @@ mod tests {
 
     #[test]
     fn insert_many_characters() {
-        let mut root_node = TrieNode::init();
+        let mut root_node = TrieNode::new();
         root_node.insert(VecDeque::from(['a', 'b', 'c']));
 
         assert_eq!(root_node.children.len(), 1);
@@ -81,7 +80,7 @@ mod tests {
 
     #[test]
     fn insert_many_words() {
-        let mut root_node = TrieNode::init();
+        let mut root_node = TrieNode::new();
         root_node.insert(VecDeque::from(['c', 'a', 't']));
         root_node.insert(VecDeque::from(['c', 'a', 'r']));
         root_node.insert(VecDeque::from(['c', 'a', 'r', 't']));
