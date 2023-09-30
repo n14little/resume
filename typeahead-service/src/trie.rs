@@ -61,18 +61,10 @@ impl TrieNode {
         }
 
         for key in node.children.keys() {
-            match node.children.get(key) {
-                Some(child_node) => {
-                    // if child_node.is_completed {
-                    //     let mut new_completion = word.clone();
-                    //     new_completion.push(*key);
-                    //     completions.push(new_completion);
-                    // }
-                    let mut new_word = word.clone();
-                    new_word.push(*key);
-                    TrieNode::search_children(child_node, new_word, completions);
-                }
-                None => {}
+            if let Some(child_node) = node.children.get(key) {
+                let mut new_word = word.clone();
+                new_word.push(*key);
+                TrieNode::search_children(child_node, new_word, completions);
             }
         }
     }
