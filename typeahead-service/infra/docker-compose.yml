@@ -7,3 +7,7 @@ services:
     ports:
       - "7474:7474"
       - "7687:7687"
+    volumes:
+      - graph-db:/data
+volumes:
+  graph-db:
